@@ -50,9 +50,21 @@
     <button onclick="changeRandomBackground()">change background</button>
 
     <script>
+        const worker = new Worker("worker.js")
+        let inProgress = false
+
         const $result = document.getElementById("result");
         const $progress = document.getElementById("progress");
         const $number = document.getElementById("number");
+
+        worker.onmessage = function (e) {
+            $progress.textContent = e.data.progress
+            $result.textContent = e.data.result
+
+            if (e.data.progress === 100) {
+                inProgress = false
+            }
+        }
 
         function changeRandomBackground() {
             const r = Math.floor(Math.random() * 255);
@@ -61,16 +73,20 @@
             document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
         }
 
-        function sumNumber(n) {
-            let result = 0;
-            for (let i = 1; i <= n; i++) {
-                result += i;
-            }
-            return result;
-        }
-
         function runCalc(e) {
             e.preventDefault();
+
+            if (inProgress) {
+                alert("In progress!")
+                return
+            }
+
+            inProgress = true
+
+            const number = document.getElementById("numberInput").value
+            $number.textContent = number
+
+            worker.postMessage(number)
         }
 
     </script>
