@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+a:hover {
+    text-decoration: underline;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -75,6 +79,10 @@ main section {
     cursor: pointer;
 }
 
+#introduce .tab-button:hover {
+    opacity: 0.8;
+}
+
 #introduce .tab-button.active {
     background: #222;
     color: #fff;
@@ -100,7 +108,7 @@ main section {
 
 /* footer */
 footer {
-    color: #aaa;
+    color: #fff;
     background: #444;
     text-align: center;
     padding: 2rem 0;
