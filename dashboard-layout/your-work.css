@@ -1,3 +1,24 @@
 /********************************/
 /* Only this file can be edited */
 /********************************/
+
+.section-wrapper > * {   
+    height: calc((100dvh - 100px - var(--global-padding) * 2 - 40px) / 2);
+    overflow-y: auto;
+}
+
+.section-wrapper > *:nth-child(2) {
+    grid-column-start: 1;
+    grid-row-start: 1;
+    grid-column-end: span 2;
+}
+
+.section-wrapper > *:nth-child(1) {
+    grid-column-start: 3;
+}
+
+.section-wrapper > *:nth-child(4) {
+    grid-column-start: 2;
+    grid-row-start: 2;
+    grid-column-end: span 2;
+}
