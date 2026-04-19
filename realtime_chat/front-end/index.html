@@ -1,36 +1,71 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Realtime Chat</title>
     <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
 
-<div id="container">
-    <div class="message-container">
-        <div class="message-box">
-            <div class="message-wrapper">
-
-                <div class="message-item">
-                    <div class="message-content">your text</div>
-                </div>
-
-                <div class="message-item my">
-                    <div class="message-content">my text</div>
-                </div>
-
+    <div id="container">
+        <div class="message-container">
+            <div class="message-box">
+                <div class="message-wrapper"></div>
             </div>
         </div>
+        <form action="" class="input-box">
+            <input type="text" class="input-control">
+            <button>Submit</button>
+        </form>
     </div>
-    <form action="" class="input-box">
-        <input type="text" class="input-control">
-        <button>Submit</button>
-    </form>
-</div>
+
+    <script type="module">
+        import { io } from "./node_modules/socket.io-client/dist/socket.io.esm.min.js"
+
+        const socket = io("http://localhost:3000")
+
+        const form = document.querySelector(".input-box")
+        const input = document.querySelector(".input-control")
+        const messageWrapper = document.querySelector(".message-wrapper")
+        const messageBox = document.querySelector(".message-box")
+
+        function appendMessage(text, isMine) {
+            const item = document.createElement("div")
+            item.className = `message-item${isMine ? " my" : ""}`
+
+            const content = document.createElement("div")
+            content.className = "message-content"
+            content.textContent = text
+
+            item.appendChild(content)
+            messageWrapper.appendChild(item)
+            messageBox.scrollTop = messageBox.scrollHeight
+        }
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault()
+
+            const text = input.value.trim()
+            if (!text) {
+                return
+            }
+
+            socket.emit("chat message", text)
+
+            input.value = ""
+            input.focus()
+        })
+
+        socket.on("chat message", (payload) => {
+            appendMessage(payload.text, payload.senderId === socket.id)
+        })
+    </script>
 
 </body>
+
 </html>
