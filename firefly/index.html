@@ -7,13 +7,198 @@
     <title>Document</title>
 
     <style>
+        :root {
+            --size: 10px;
+            --gap: 80px;
+            --half-size: calc(var(--size) / 2);
+            --step: calc(var(--size) + var(--gap));
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        body {
+            min-height: 100dvh;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+        .scene {
+            background-color: dimgray;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            perspective: 1000px;
+        }
+
+        .cube-container {
+            width: 0;
+            height: 0;
+            transform-style: preserve-3d;
+            transform-origin: center;
+        }
+
+        .cube {
+            position: absolute;
+            width: var(--size);
+            height: var(--size);
+            transform-style: preserve-3d;
+            transform: translate3d(var(--tx), var(--ty), var(--tz));
+        }
+
+        .face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid gray;
+            backface-visibility: hidden;
+            background-color: white;
+        }
+
+        .cube.is-lit .face {
+            box-shadow: inset 0 0 16px red, 0 0 32px red;
+        }
+
+        .face__front {
+            transform: rotateY(0deg) translateZ(var(--half-size));
+        }
+
+        .face__back {
+            transform: rotateY(180deg) translateZ(var(--half-size));
+        }
+
+        .face__right {
+            transform: rotateY(90deg) translateZ(var(--half-size));
+        }
+
+        .face__left {
+            transform: rotateY(-90deg) translateZ(var(--half-size));
+        }
+
+        .face__top {
+            transform: rotateX(90deg) translateZ(var(--half-size));
+        }
+
+        .face__bottom {
+            transform: rotateX(-90deg) translateZ(var(--half-size));
+        }
     </style>
 </head>
 
 <body>
-    <script>
+    <div class="scene">
+        <div class="cube-container"></div>
+    </div>
 
+    <script>
+        const GRID_SIZE = 5
+        const FACE_NAMES = ['front', 'back', 'right', 'left', 'top', 'bottom']
+
+        const extent = (GRID_SIZE - 1) / 2
+
+        let rotationX = 0
+        let rotationY = 0
+        let zoom = 0
+
+        const scene = document.querySelector('.scene')
+        const cubeContainer = document.querySelector(".cube-container")
+        const cubes = []
+        const maxLayer = Math.ceil(extent)
+
+        function renderTransform() {
+            cubeContainer.style.transform = `translateZ(${zoom}px) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`
+        }
+
+        renderTransform()
+
+        for (let x = 0; x < GRID_SIZE; x++) {
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let z = 0; z < GRID_SIZE; z++) {
+                    const cube = document.createElement("div")
+
+                    cube.className = "cube"
+
+                    cube.style.setProperty('--tx', `calc((${x} - ${extent}) * var(--step))`)
+                    cube.style.setProperty('--ty', `calc((${y} - ${extent}) * var(--step))`)
+                    cube.style.setProperty('--tz', `calc((${z} - ${extent}) * var(--step))`)
+
+                    FACE_NAMES.forEach((faceName) => {
+                        const face = document.createElement('div')
+                        face.className = `face face__${faceName}`
+                        cube.appendChild(face)
+                    })
+
+                    const layer = Math.max(
+                        Math.abs(x - extent),
+                        Math.abs(y - extent),
+                        Math.abs(z - extent)
+                    )
+                    cube.dataset.layer = String(layer)
+
+                    cubeContainer.appendChild(cube)
+                    cubes.push(cube)
+                }
+            }
+        }
+
+        let isDragging = false
+        let lightingTick = null
+
+        function runLightingSequence(layer = 0) {
+            if (layer === 0) {
+                cubes.forEach((cube) => cube.classList.remove('is-lit'))
+            }
+
+            cubes.forEach((cube) => {
+                if (Number(cube.dataset.layer) === layer) {
+                    cube.classList.add('is-lit')
+                }
+            })
+
+            const nextLayer = layer + 1
+            const delay = 200
+
+            if (nextLayer <= maxLayer) {
+                lightingTick = setTimeout(() => runLightingSequence(nextLayer), delay)
+                return
+            }
+
+            lightingTick = setTimeout(() => runLightingSequence(0), 400)
+        }
+
+        runLightingSequence()
+
+        scene.addEventListener("mousedown", (event) => {
+            event.preventDefault()
+            isDragging = true
+        })
+
+        addEventListener("mouseup", () => {
+            isDragging = false
+        })
+
+        scene.addEventListener("mousemove", (event) => {
+            if (!isDragging) return
+
+            const { movementX, movementY } = event
+
+            rotationY += movementX
+            rotationX -= movementY
+
+            renderTransform()
+        })
+
+        scene.addEventListener('wheel', (event) => {
+            event.preventDefault()
+
+            zoom -= event.deltaY
+
+            renderTransform()
+        })
     </script>
 </body>
 
