@@ -5,10 +5,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <style>
+        .container {
+            max-width: fit-content;
+            margin-inline: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-direction: column;
+            padding-block: 8rem;
+        }
+
+        .color-wheel-canvas {
+            border-radius: 50%;
+        }
+
+        .value {
+            margin-inline: auto;
+            max-width: fit-content;
+            padding: 0.5rem 1rem;
+            border: 1px solid black;
+            border-radius: 0.2rem;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="container">
+        <label for="brightnessRange">
+            <strong>Brightness</strong>
+        </label>
 
+        <input id="brightnessRange" type="range" min="0" max="100" value="100">
+
+        <canvas width="400" height="400" class="color-wheel-canvas" id="colorWheelCanvas"></canvas>
+
+        <div id="colorValue" class="value">#ffffff</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("colorWheelCanvas")
+        const ctx = canvas.getContext("2d")
+        const brightnessRange = document.getElementById("brightnessRange")
+        const colorValue = document.getElementById("colorValue")
+
+        const radius = Math.min(canvas.width, canvas.height) / 2
+        const cx = canvas.width / 2
+        const cy = canvas.height / 2
+
+        let brightness = Number(brightnessRange.value)
+        let selectedHue = 0
+        let selectedSaturation = 0
+        let isDragging = false
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+            for (let angle = 0; angle < 360; angle++) {
+                const startAngle = (angle - 1) * Math.PI / 180
+                const endAngle = angle * Math.PI / 180
+
+                ctx.beginPath()
+                ctx.moveTo(cx, cy)
+                ctx.arc(cx, cy, radius, startAngle, endAngle)
+                ctx.closePath()
+
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
+                gradient.addColorStop(0, "white")
+                gradient.addColorStop(1, `hsl(${angle}, 100%, 50%)`)
+
+                ctx.fillStyle = gradient
+                ctx.fill()
+            }
+
+            drawSelector()
+        }
+
+        function drawSelector() {
+            const selectorRadius = selectedSaturation / 100 * radius
+            const selectorAngle = selectedHue * Math.PI / 180
+
+            const x = cx + Math.cos(selectorAngle) * selectorRadius
+            const y = cy + Math.sin(selectorAngle) * selectorRadius
+
+            ctx.beginPath()
+            ctx.arc(x, y, 10, 0, Math.PI * 2)
+            ctx.strokeStyle = "black"
+            ctx.stroke()
+        }
+
+        function toHex(channel) {
+            return channel.toString(16).padStart(2, "0")
+        }
+
+
+        function updateSelectedColor() {
+            const chroma = value * selectedSaturation / 100
+            const hueSection = selectedHue / 60
+            const x = chroma * (1 - Math.abs(hueSection % 2 - 1))
+
+            let r1
+            let g1
+            let b1
+
+            if (hueSection >= 0 && hueSection < 1) {
+                r1 = chroma
+                g1 = x
+            } else if (hueSection >= 1 && hueSection < 2) {
+                r1 = x
+                g1 = chroma
+            } else if (hueSection >= 2 && hueSection < 3) {
+                g1 = chroma
+                b1 = x
+            } else if (hueSection >= 3 && hueSection < 4) {
+                g1 = x
+                b1 = chroma
+            } else if (hueSection >= 4 && hueSection < 5) {
+                r1 = x
+                b1 = chroma
+            } else {
+                r1 = chroma
+                b1 = x
+            }
+
+            const m = brightness / 100 - chroma
+            const r = Math.round((r1 + m) * 255)
+            const g = Math.round((g1 + m) * 255)
+            const b = Math.round((b1 + m) * 255)
+
+            colorValue.textContent = `#${toHex(r)}${toHex(g)}${toHex(b)}`
+        }
+
+        function pickColor(event) {
+            const rect = canvas.getBoundingClientRect()
+            const x = event.clientX - rect.left
+            const y = event.clientY - rect.top
+
+            const dx = x - cx
+            const dy = y - cy
+            const distance = Math.hypot(dx, dy)
+
+            if (distance > radius) return
+
+            selectedHue = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360
+            selectedSaturation = Math.min(100, distance / radius * 100)
+
+            draw()
+            updateSelectedColor()
+        }
+
+        brightnessRange.addEventListener("input", (event) => {
+            brightness = Number(event.target.value)
+            updateSelectedColor()
+        })
+
+        canvas.addEventListener("pointerdown", (event) => {
+            isDragging = true
+            pickColor(event)
+        })
+
+        canvas.addEventListener("pointermove", (event) => {
+            if (!isDragging) return
+
+            pickColor(event)
+        })
+
+        window.addEventListener("pointerup", () => {
+            isDragging = false
+        })
+
+        draw()
+        updateSelectedColor()
+    </script>
 </body>
 
 </html>
