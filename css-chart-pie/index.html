@@ -5,10 +5,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <style>
+        @property --fill {
+            syntax: "<angle>";
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        .container {
+            max-width: fit-content;
+            border: 1px solid black;
+            padding: 1rem;
+            margin: 8rem auto;
+        }
+
+        .chart {
+            position: relative;
+            --fill: 0deg;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            transition: --fill 1s ease-in-out;
+            background: conic-gradient(red 0 45%, green 45% 70%, blue 70% 100%);
+            mask: conic-gradient(from 0deg, #000 0deg var(--fill), #0000 var(--fill) 360deg);
+        }
+
+        .chart::before {
+            content: "";
+            position: absolute;
+            background: white;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .container:hover .chart {
+            --fill: 360deg;
+        }
+    </style>
 </head>
 
 <body>
-
+    <div class="container">
+        <div class="chart"></div>
+    </div>
 </body>
 
 </html>
