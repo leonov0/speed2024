@@ -5,10 +5,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 8rem auto;
+            gap: 1rem;
+        }
+
+        #canvas {
+            display: block;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="container">
+        <canvas id="canvas" width="400" height="400"></canvas>
 
+        <form onsubmit="draw(event)">
+            <input type="number" id="count">
+            <button>Draw</button>
+        </form>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("canvas")
+        const ctx = canvas.getContext("2d")
+
+        const width = canvas.width
+        const height = canvas.height
+
+        function draw(event) {
+            event.preventDefault()
+
+            const count = Number(document.getElementById("count").value)
+
+            ctx.clearRect(0, 0, width, height)
+
+            const size = Math.min(width, height) * 0.8
+            const centerX = width / 2
+            const centerY = height / 2
+
+            drawFractalTriangle(centerX, centerY, size, count)
+        }
+
+        function drawFractalTriangle(x, y, size, count) {
+            if (count === 0) {
+                drawTriangle(x, y, size)
+                return
+            }
+
+            const newSize = size / 2
+            const height = newSize * Math.sqrt(3) / 2
+
+            drawFractalTriangle(x, y - height / 3, newSize, count - 1)
+            drawFractalTriangle(x - newSize / 2, y + height * 2 / 3, newSize, count - 1)
+            drawFractalTriangle(x + newSize / 2, y + height * 2 / 3, newSize, count - 1)
+        }
+
+        function drawTriangle(x, y, size) {
+            const height = size * Math.sqrt(3) / 2
+
+            ctx.beginPath()
+            ctx.moveTo(x, y - height / 3)
+            ctx.lineTo(x - size / 2, y + height * 2 / 3)
+            ctx.lineTo(x + size / 2, y + height * 2 / 3)
+            ctx.closePath()
+
+            ctx.fillStyle = "black"
+            ctx.fill()
+        }
+    </script>
 </body>
 
 </html>
