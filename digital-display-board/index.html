@@ -8,7 +8,92 @@
 </head>
 
 <body>
+    <input id="input" type="text" value="ABC123🥇">
+    <canvas id="canvas" width="800" height="200"></canvas>
 
+    <script>
+        const dotRadius = 2;
+        const dotPitch = 4;
+        const fontSizePixels = 128;
+        const scrollSpeedPixelsPerFrame = 2;
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const input = document.getElementById("input");
+
+        const sampleCanvas = document.createElement("canvas");
+        const sampleContext = sampleCanvas.getContext("2d");
+
+        let dots = [];
+        let patternWidthPixels = 0;
+        let scrollOffsetXPixels = canvas.width;
+
+        function rebuildDotsFromInput() {
+            const font = `${fontSizePixels}px Arial`;
+            sampleContext.font = font;
+            const sampleWidth = Math.max(1, (sampleContext.measureText(input.value).width + dotPitch * 2) | 0);
+            const sampleHeight = fontSizePixels * 1.35;
+
+            sampleCanvas.width = sampleWidth;
+            sampleCanvas.height = sampleHeight;
+
+            sampleContext.font = font;
+            sampleContext.fillStyle = "white";
+            sampleContext.clearRect(0, 0, sampleWidth, sampleHeight);
+            sampleContext.fillText(input.value, dotPitch, fontSizePixels);
+
+            const pixels = sampleContext.getImageData(0, 0, sampleWidth, sampleHeight).data;
+
+            const newDots = [];
+            let maxCenterX = 0;
+            const rowStride = sampleWidth * 4;
+
+            for (let y = 0; y < sampleHeight; y += dotPitch) {
+                for (let x = 0; x < sampleWidth; x += dotPitch) {
+                    const alpha = pixels[y * rowStride + x * 4 + 3];
+                    if (!alpha) continue;
+
+                    const centerX = x + dotRadius;
+                    newDots.push({ centerX, centerY: y + dotRadius });
+                    if (centerX > maxCenterX) maxCenterX = centerX;
+                }
+            }
+
+            dots = newDots;
+            patternWidthPixels = maxCenterX + dotPitch + dotRadius;
+            scrollOffsetXPixels = canvas.width;
+        }
+
+        input.addEventListener("input", rebuildDotsFromInput);
+        rebuildDotsFromInput();
+
+        function drawFrame() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+
+            dots.forEach((dot) => {
+                const snappedX = Math.round((dot.centerX + scrollOffsetXPixels) / dotPitch) * dotPitch;
+                const snappedY = Math.round(dot.centerY / dotPitch) * dotPitch;
+                ctx.moveTo(snappedX + dotRadius, snappedY);
+                ctx.arc(snappedX, snappedY, dotRadius, 0, Math.PI * 2);
+            });
+
+            ctx.fill();
+
+            scrollOffsetXPixels -= scrollSpeedPixelsPerFrame;
+            if (scrollOffsetXPixels < -patternWidthPixels) {
+                scrollOffsetXPixels = canvas.width;
+            }
+
+            requestAnimationFrame(drawFrame);
+        }
+
+        drawFrame();
+    </script>
 </body>
 
 </html>
