@@ -6,3 +6,21 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Cycle {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Event {
+  id        Int       @id @default(autoincrement())
+  title     String
+  date      DateTime
+  type      Cycle?
+  cycle     Int?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
