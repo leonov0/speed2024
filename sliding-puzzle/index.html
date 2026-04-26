@@ -7,14 +7,65 @@
     <title>Document</title>
 
     <style>
+        #container {
+            margin: 8rem auto;
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
 
+        .piece {
+            border: 0.1rem solid white;
+            background: transparent;
+            padding: 0;
+
+            width: 100px;
+            height: 100px;
+            position: absolute;
+
+            transform: translate(calc(var(--x) * 100%), calc(var(--y) * 100%));
+            background-position: calc(var(--ox) * -100px) calc(var(--oy) * -100px);
+            transition: transform 0.3s;
+            background-image: url('./image.jpg');
+            background-size: 400px 400px;
+        }
     </style>
 </head>
 
 <body>
-
+    <div id="container"></div>
     <script>
+        const container = document.getElementById('container');
 
+        const emptyPosition = { x: 3, y: 3 };
+
+        function updatePosition(piece, x, y) {
+            piece.dataset.x = x;
+            piece.dataset.y = y;
+            piece.style.setProperty('--x', x);
+            piece.style.setProperty('--y', y);
+        }
+
+        for (let i = 0; i < 15; i++) {
+            const piece = document.createElement('button');
+            container.appendChild(piece);
+            piece.className = 'piece';
+            updatePosition(piece, i % 4, Math.floor(i / 4));
+            piece.style.setProperty('--ox', i % 4);
+            piece.style.setProperty('--oy', Math.floor(i / 4));
+
+            piece.addEventListener('click', () => {
+                const x = parseInt(piece.dataset.x);
+                const y = parseInt(piece.dataset.y);
+
+                if ((x === emptyPosition.x && Math.abs(y - emptyPosition.y) === 1) ||
+                    (y === emptyPosition.y && Math.abs(x - emptyPosition.x) === 1)) {
+                    updatePosition(piece, emptyPosition.x, emptyPosition.y);
+                    emptyPosition.x = x;
+                    emptyPosition.y = y;
+                }
+            });
+        }
     </script>
 </body>
 
