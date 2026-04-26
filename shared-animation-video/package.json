@@ -1,0 +1,21 @@
+{
+  "name": "shared-animation-video",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "nuxt": "^4.4.2"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.15.2",
+    "eslint": "^9.39.4",
+    "typescript": "^6.0.3"
+  }
+}
