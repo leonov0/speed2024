@@ -7,15 +7,126 @@
     <title>Document</title>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            cursor: none;
+            background: black;
+            min-height: 100vh;
+        }
+
+        #canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+
+        #pointer {
+            --scale: 1;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            margin-left: -10px;
+            margin-top: -10px;
+            border-radius: 50%;
+            background: red;
+            pointer-events: none;
+            z-index: 2;
+            transform: scale(var(--scale));
+            will-change: transform, left, top;
+        }
     </style>
 </head>
 
 <body>
-
+    <canvas id="canvas" aria-hidden="true"></canvas>
+    <div id="pointer" role="presentation"></div>
 
     <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const pointer = document.getElementById("pointer");
 
+        const points = [];
+        let mx = 0
+        let my = 0
+        let lastMx = 0
+        let lastMy = 0;
+        let displayScale = 1
+        let tailStrength = 0
+        let hasMoved = false;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function tick() {
+            const now = performance.now();
+            if (hasMoved) {
+                const dx = mx - lastMx
+                const dy = my - lastMy;
+                if (dx * dx + dy * dy > 0.25) {
+                    points.push({ x: mx, y: my, t: now });
+                    lastMx = mx;
+                    lastMy = my;
+                }
+            }
+            while (points.length > 200) points.shift();
+            while (points.length && points[0].t < now - 500) points.shift();
+
+            let targetStrength = 0;
+            if (points.length >= 2) {
+                let len = 0;
+                for (let i = 1; i < points.length; i++) {
+                    const a = points[i - 1], b = points[i];
+                    len += Math.hypot(b.x - a.x, b.y - a.y);
+                }
+                const recency = Math.max(0, 1 - (now - points[points.length - 1].t) / 500);
+                targetStrength = Math.min(1, 0.35 * recency + 0.65 * Math.min(1, len / 180));
+            }
+            tailStrength += (targetStrength - tailStrength) * 0.12;
+            displayScale += (0.4 + 0.6 * (1 - tailStrength) - displayScale) * 0.18;
+            pointer.style.setProperty("--scale", String(displayScale));
+            pointer.style.left = mx + "px";
+            pointer.style.top = my + "px";
+
+            const w = window.innerWidth, h = window.innerHeight;
+            ctx.clearRect(0, 0, w, h);
+            if (points.length >= 2) {
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                for (let i = 1; i < points.length; i++) {
+                    const a = points[i - 1], b = points[i];
+                    const ageA = now - a.t, ageB = now - b.t;
+                    const alpha = (1 - Math.max(ageA, ageB) / 500) * 0.85;
+                    if (alpha <= 0) continue;
+                    const t = i / (points.length - 1);
+                    ctx.strokeStyle = "rgba(238, 17, 17, " + (alpha * (0.35 + 0.65 * t)) + ")";
+                    ctx.lineWidth = 2 * (0.5 + 0.5 * (1 - ageB / 500));
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.stroke();
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        window.addEventListener("resize", resize);
+        document.addEventListener("mousemove", function (e) {
+            mx = e.clientX;
+            my = e.clientY;
+            if (!hasMoved) { hasMoved = true; lastMx = mx; lastMy = my; }
+        });
+        resize();
+        requestAnimationFrame(tick);
     </script>
 </body>
 
