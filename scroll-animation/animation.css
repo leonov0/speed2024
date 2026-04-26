@@ -1,3 +1,84 @@
 /********************************/
 /* Please write your code here. */
 /********************************/
+
+body {
+    overflow-x: hidden;
+}
+
+#section1 {
+    view-timeline-name: --scroll-vt-a;
+}
+
+#section1 .box {
+    top: 100px;
+    right: 0;
+    left: 0;
+    position: sticky;
+}
+
+#section1 .box::before,
+#section1 .box::after {
+    z-index: 2;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    content: "";
+    display: block;
+    position: absolute;
+    background-color: #fff;
+
+    animation-timeline: --scroll-vt-a;
+    animation-fill-mode: both;
+    animation-name: doorPanelsExpand;
+    animation-range: contain 50% cover 100%;
+}
+
+#section1 .box::before {
+    left: 0;
+    transform-origin: 0% 50%;
+}
+
+#section1 .box::after {
+    right: 0;
+    transform-origin: 100% 50%;
+}
+
+#section1 .box .text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#section2 {
+    view-timeline-name: --scroll-vt-b;
+    height: 300vw;
+}
+
+#section2 .item {
+    top: 0;
+    left: 0;
+    position: sticky;
+
+    animation-name: blockSlidesLeft;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    animation-timeline: --scroll-vt-b;
+    animation-range: contain 0% contain 100%;
+}
+
+@keyframes doorPanelsExpand {
+    0% {
+        transform: scaleX(0);
+    }
+    100% {
+        transform: scaleX(1);
+    }
+}
+
+@keyframes blockSlidesLeft {
+    100% {
+        transform: translateX(calc(-100% + 100vw));
+    }
+}
