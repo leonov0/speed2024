@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .container {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: black;
+    }
+
+    .scene {
+      position: relative;
+      width: 200px;
+      height: 200px;
+    }
+
+    .ball {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      width: 50px;
+      height: 50px;
+      background-color: white;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      animation: bounce 1s infinite ease-in-out;
+      z-index: 1;
+    }
+
+    .shadow {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      width: 60px;
+      height: 15px;
+      background-color: white;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      filter: blur(2px);
+      animation: shadow 1s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0% {
+        transform: translate(-50%, 0) scale(1, 1);
+      }
+
+      20% {
+        transform: translate(-50%, 0) scale(1.2, 0.8);
+      }
+
+      40% {
+        transform: translate(-50%, -120px) scale(0.8, 1.2);
+      }
+
+      60% {
+        transform: translate(-50%, -120px) scale(0.9, 1.1);
+      }
+
+      80% {
+        transform: translate(-50%, 0) scale(1.1, 0.9);
+      }
+
+      100% {
+        transform: translate(-50%, 0) scale(1, 1);
+      }
+    }
+
+    @keyframes shadow {
+      0% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0.5;
+      }
+
+      40% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0.2;
+      }
+
+      60% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0.2;
+      }
+
+      100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0.5;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="scene">
+      <div class="ball"></div>
+      <div class="shadow"></div>
+    </div>
+  </main>
+
+  <script>
+
+  </script>
+</body>
+
+</html>
