@@ -12,15 +12,88 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #canvas {
+      border: 1px solid black;
     }
   </style>
 </head>
 
 <body>
-  <main class="container"></main>
+  <main class="container">
+    <label>
+      Radius
+      <input type="number" id="radius" min="1" max="61" value="6">
+    </label>
+
+    <canvas id="canvas" width="800" height="800"></canvas>
+  </main>
 
   <script>
+    const MAX_RADIUS = 61;
 
+    const radiusInput = document.getElementById('radius');
+    const canvas = document.getElementById('canvas');
+
+    /** @type {CanvasRenderingContext2D} */
+    const ctx = canvas.getContext('2d');
+
+    radiusInput.addEventListener('input', () => {
+      const radius = parseInt(radiusInput.value);
+      if (isNaN(radius) || radius < 1 || radius > MAX_RADIUS) return;
+      draw(radius);
+    });
+
+    function draw(radius) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const gap = canvas.width / (MAX_RADIUS * 2);
+
+      for (let x = -radius; x <= radius; x++) {
+        for (let y = -radius; y <= radius; y++) {
+          const dist = x * x + y * y;
+
+          if (dist >= radius * radius - radius && dist <= radius * radius + radius) {
+            ctx.beginPath();
+            ctx.rect(
+              Math.floor(canvas.width / 2 + x * gap),
+              Math.floor(canvas.height / 2 + y * gap),
+              gap,
+              gap
+            );
+            ctx.fillStyle = 'black';
+            ctx.fill();
+          }
+        }
+      }
+
+      ctx.beginPath();
+      ctx.rect(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), gap, gap);
+      ctx.fillStyle = 'red';
+      ctx.fill();
+
+
+      for (let i = 0; i < MAX_RADIUS * 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * gap, 0);
+        ctx.lineTo(i * gap, canvas.height);
+        ctx.strokeStyle = 'darkgray';
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < MAX_RADIUS * 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * gap);
+        ctx.lineTo(canvas.width, i * gap);
+        ctx.strokeStyle = 'darkgray';
+        ctx.stroke();
+      }
+    }
+
+    draw(6);
   </script>
 </body>
 
